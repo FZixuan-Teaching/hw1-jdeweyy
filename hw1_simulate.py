@@ -81,7 +81,17 @@ def greedy_algorithm(P: dict, D: dict, patient_status: dict, donor_status: dict,
 
   ### Question 1.1(b).i: Code the greedy algorithm and append matches to the list 'matches'
   matches = []
-
+    
+  ### Processing each patient in order
+  for p in patients:
+      # Find first available compatible donor for current patient
+      for d in donors:
+          if donor_status[d] == False and can_receive(P[p], D[d], compatible_blood_type):
+              # If compatible donor is found, match them and append 'matches' 
+              matches.append((p, d))
+              patient_status[p] = True
+              donor_status[d] = True
+              break
   return matches
 
 
@@ -111,12 +121,21 @@ def mip(P: dict, D: dict, patient_status: dict, donor_status: dict, compatible_b
   sys.stdout.flush()
 
   # Variables: x_{i,j} binary representing whether patient i to donor j
-
+  x = {}
+  for i in patients:
+      for j in donors:
+          x[i, j] = model.addVar(vtype=GRB.BINARY, name=f"x_{i}_{j}")
+          
   # Constraint: Each patient can be matched to at most one (compatible) donor
-
+  for i in patients:
+      model.addConstr(quicksum(x[i, j] for j in donors) <= 1, f"patient_{i}_match")
+      
   # Constraint: Each donor can be matched to at most one (compatible) patient
+  for j in donors:
+      model.addConstr(quicksum(x[i, j] for i in patients) <= 1 f"donor_{j}_match")
 
   # Objective: Maximize number of transplants
+  model.setObjective(quicksum(x[i, j] for i in patients for j in donors), GRB.MAXIMIZE)
 
   # Optimize
   model.params.outputflag = 0
@@ -125,7 +144,11 @@ def mip(P: dict, D: dict, patient_status: dict, donor_status: dict, compatible_b
 
   # Set matches based on solution to model
   matches = []
-
+  if model.status == GRB.OPTIMAL:
+      for i in patients:
+          for j in donors:
+              if x[i, j].x > 0.5:    # Check for match where x[i, j] is 1
+                  matches.append((i, j))
   return matches
 
 
