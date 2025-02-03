@@ -341,12 +341,16 @@ def simulate(
   for i in patients.keys():
     TIS_BT[patients[i]] += TIS[i] / num_patients_by_type[patients[i]]
 
+  avg_num_patients_bt_period = {}
+  for key in num_patients_by_type:
+      avg_num_patients_bt_period[key] = num_patients_by_type[key]/num_periods
+
   print("=== Summary Statistics ===")
   print('Number of periods:', num_periods)
   print('Total # patients matched: {:d}/{:d}'.format(sum(num_matched_by_type.values()), num_patients))
   print('Number of patients by type:', num_patients_by_type)
   print('Number of patients matched:', num_matched_by_type)
-  print('1.1(b)iii: Average number of patients (per blood type) matched per period:', avg_prop_matched)
+  print('1.1(b)iii: Average number of patients (per blood type) matched per period:', avg_num_patients_bt_period)
   print('1.1(b)iv: Average time in system:', avg_tis)
   print('Average time in system (by type, weighed by num_patients):', {key : sum(TIS[i] for i in patients if patients[i] == key) / num_patients for key in compatible_blood_type.keys()})
   print('1.1(b)iv: Average time in system (by type, weighed by num_patients_by_type):', TIS_BT)
