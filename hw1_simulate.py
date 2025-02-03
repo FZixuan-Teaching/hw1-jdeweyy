@@ -1,5 +1,6 @@
 # %%
 import numpy as np
+import sys as sys    # Needed to run sys.stdout.flush() in mip_2 problem
 from gurobipy import *
 
 # %%
@@ -82,7 +83,7 @@ def greedy_algorithm(P: dict, D: dict, patient_status: dict, donor_status: dict,
   ### Question 1.1(b).i: Code the greedy algorithm and append matches to the list 'matches'
   matches = []
     
-  ### Processing each patient in order
+  # Processing each patient in order
   for p in patients:
       # Find first available compatible donor for current patient
       for d in donors:
@@ -93,7 +94,6 @@ def greedy_algorithm(P: dict, D: dict, patient_status: dict, donor_status: dict,
               donor_status[d] = True
               break
   return matches
-
 
 # %%
 ## Integer linear programming approach for transplants
@@ -150,7 +150,6 @@ def mip(P: dict, D: dict, patient_status: dict, donor_status: dict, compatible_b
               if x[i, j].x > 0.5:    # Check for match where x[i, j] is 1
                   matches.append((i, j))
   return matches
-
 
 # %%
 ## Second integer linear programming approach for transplants
@@ -337,7 +336,7 @@ def simulate(
         TIS[i] += 1
 
   # Report statistics
-  avg_tis = 0 # TODO you need to calculate this value!
+  avg_tis = sum(TIS.values)/len(TIS) # TODO you need to calculate this value! (Done)
   TIS_BT = {key: 0 for key in compatible_blood_type.keys()}
   for i in patients.keys():
     TIS_BT[patients[i]] += TIS[i] / num_patients_by_type[patients[i]]
@@ -347,8 +346,8 @@ def simulate(
   print('Total # patients matched: {:d}/{:d}'.format(sum(num_matched_by_type.values()), num_patients))
   print('Number of patients by type:', num_patients_by_type)
   print('Number of patients matched:', num_matched_by_type)
-  print('1.1(b)iii: Average number of patients (per blood type) matched per period:', "TODO for homework")
-  print('1.1(b)iv: Average time in system:', "TODO for homework")
+  print('1.1(b)iii: Average number of patients (per blood type) matched per period:', avg_prop_matched)
+  print('1.1(b)iv: Average time in system:', avg_tis)
   print('Average time in system (by type, weighed by num_patients):', {key : sum(TIS[i] for i in patients if patients[i] == key) / num_patients for key in compatible_blood_type.keys()})
   print('1.1(b)iv: Average time in system (by type, weighed by num_patients_by_type):', TIS_BT)
   print('1.1(b)v: Average proportion of patients matched per period by type:', "TODO for extra credit")
